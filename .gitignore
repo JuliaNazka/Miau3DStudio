@@ -1,0 +1,20 @@
+# Só o código do app entra no repositório.
+# Modelos de IA, ambientes, ferramentas instaladas, biblioteca, caches e logs ficam fora.
+/*
+!/.gitignore
+!/README.md
+!/requirements.txt
+!/Miau3DStudio.bat
+!/app/
+!/tools/
+!/docs/
+
+/tools/*
+!/tools/*.bat
+!/tools/*.ps1
+
+# Imagem de exemplo da Tencent (não redistribuir)
+/app/ui/exemplos/
+
+__pycache__/
+*.pyc

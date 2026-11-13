@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Miau 3D Studio</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="vendor/model-viewer.min.js"></script>
+</head>
+<body>
+<aside class="side">
+  <div class="brand">
+    <svg viewBox="0 0 64 64" class="logo" aria-hidden="true"><path d="M10 54V14l14 12h16l14-12v40z" fill="currentColor"/><circle cx="24" cy="38" r="4" fill="var(--bg)"/><circle cx="40" cy="38" r="4" fill="var(--bg)"/><path d="M29 46h6l-3 3z" fill="var(--bg)"/></svg>
+    <div><b>Miau</b> 3D Studio</div>
+  </div>
+  <nav>
+    <div class="navlabel">Criar</div>
+    <button data-view="image" class="nav active">🖼️ Imagem → 3D</button>
+    <button data-view="multiview" class="nav">📸 Várias fotos → 3D</button>
+    <button data-view="text" class="nav">✍️ Texto → 3D</button>
+    <div class="navlabel">Seus modelos</div>
+    <button data-view="library" class="nav">📚 Biblioteca</button>
+  </nav>
+  <div class="gpu" id="gpu">Iniciando o motor…</div>
+</aside>
+
+<main>
+  <!-- CRIAR -->
+  <section id="create" class="view">
+    <div class="create-grid">
+      <form id="form" class="panel">
+        <h1 id="ctitle">Imagem → 3D</h1>
+        <p class="hint" id="chint">Envie uma foto ou desenho de um objeto. O fundo é removido automaticamente.</p>
+
+        <div class="mode mode-image">
+          <label class="drop" data-field="image"><input type="file" accept="image/*" name="image"><span>Arraste a imagem aqui<br><small>ou clique para escolher</small></span></label>
+        </div>
+
+        <div class="mode mode-multiview" hidden>
+          <div class="views">
+            <label class="drop small" data-field="front"><input type="file" accept="image/*" name="front"><span>Frente<br><small>obrigatória</small></span></label>
+            <label class="drop small" data-field="left"><input type="file" accept="image/*" name="left"><span>Esquerda</span></label>
+            <label class="drop small" data-field="back"><input type="file" accept="image/*" name="back"><span>Costas</span></label>
+            <label class="drop small" data-field="right"><input type="file" accept="image/*" name="right"><span>Direita</span></label>
+          </div>
+        </div>
+
+        <div class="mode mode-text" hidden>
+          <textarea name="prompt" rows="4" placeholder="Ex.: a modern wooden armchair with grey fabric cushions"></textarea>
+          <p class="hint">Funciona melhor em inglês e com <b>um objeto só</b>. O app cria uma imagem de referência e depois transforma em 3D.</p>
+        </div>
+
+        <label class="field">Nome <input name="name" placeholder="opcional"></label>
+        <div class="row">
+          <label class="field">Qualidade
+            <select name="quality">
+              <option value="rapida">Rápida</option>
+              <option value="normal" selected>Normal</option>
+              <option value="alta">Alta (mais lenta)</option>
+            </select>
+          </label>
+          <label class="field">Semente <input name="seed" type="number" value="1234"></label>
+        </div>
+        <label class="check"><input type="checkbox" name="texture" checked> Gerar textura colorida</label>
+        <label class="check" id="projcheck"><input type="checkbox" name="project" checked> Projetar as fotos originais na textura (mais fiel às fotos)</label>
+        <button class="primary" id="go" type="submit">Gerar modelo 3D</button>
+        <div id="formerr" class="err" hidden></div>
+      </form>
+
+      <div class="panel stage">
+        <div id="job" class="job" hidden>
+          <div class="jobtop"><b id="jobname"></b><span id="jobpct">0%</span></div>
+          <div class="bar"><div id="jobbar"></div></div>
+          <div id="jobmsg" class="hint"></div>
+        </div>
+        <model-viewer id="mv" camera-controls auto-rotate shadow-intensity="1" exposure="1" environment-image="neutral" hidden></model-viewer>
+        <div id="empty" class="empty">
+          <div class="big">🐱</div>
+          <p>O modelo aparece aqui.<br><small>Gira com o mouse, zoom com a roda.</small></p>
+        </div>
+        <div id="stageactions" class="actions" hidden>
+          <button id="openitem" class="primary">Abrir na biblioteca</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BIBLIOTECA -->
+  <section id="library" class="view" hidden>
+    <div class="libhead"><h1>Biblioteca</h1><span class="hint">Tudo fica salvo em D:\Miau3DStudio\library</span></div>
+    <div id="grid" class="grid"></div>
+  </section>
+
+  <!-- DETALHE -->
+  <section id="detail" class="view" hidden>
+    <div class="detail-grid">
+      <div class="panel stage">
+        <model-viewer id="dmv" camera-controls shadow-intensity="1" exposure="1" environment-image="neutral"></model-viewer>
+        <div class="viewtoggle">
+          <button data-show="projected" class="chip" hidden>Fotos projetadas</button>
+          <button data-show="model" class="chip active">Com textura</button>
+          <button data-show="shape" class="chip">Só a forma</button>
+          <button id="wire" class="chip">Fundo claro</button>
+        </div>
+      </div>
+      <div class="panel tools">
+        <button id="back" class="link">← Biblioteca</button>
+        <h1 id="dname" contenteditable="true" spellcheck="false"></h1>
+        <div id="dinfo" class="hint"></div>
+        <img id="dref" class="ref" alt="referência">
+
+        <div id="projbox">
+          <h2>Fidelidade às fotos</h2>
+          <p class="hint">Projeta as suas fotos originais sobre o modelo, como decalques: cores, listras e textos ficam iguais às fotos. A IA continua pintando só o que nenhuma foto mostra.</p>
+          <button id="project" class="primary">Projetar fotos originais</button>
+          <div id="projmsg" class="hint"></div>
+        </div>
+
+        <h2>Ferramentas (Blender)</h2>
+        <label class="field">Reduzir polígonos <span id="decv">100%</span>
+          <input type="range" id="decimate" min="2" max="100" value="100">
+        </label>
+        <label class="field">Remesh
+          <select id="remesh">
+            <option value="">Não</option>
+            <option value="voxel">Voxel (fecha furos, perde textura)</option>
+            <option value="quad">Quads / retopologia (perde textura)</option>
+          </select>
+        </label>
+        <label class="field" id="remeshvalwrap" hidden><span id="remeshlabel">Detalhe</span> <input type="number" id="remeshval" value="128"></label>
+        <label class="field">Altura real (cm) <input type="number" id="height" placeholder="manter" step="0.1"></label>
+        <label class="check"><input type="checkbox" id="base"> Base para impressão 3D</label>
+        <label class="field">Formato
+          <select id="format">
+            <option value="glb">GLB (web, Unity, Unreal)</option>
+            <option value="fbx">FBX (3ds Max, Maya, Unity)</option>
+            <option value="obj">OBJ</option>
+            <option value="stl">STL (impressão 3D)</option>
+            <option value="usdz">USDZ (realidade aumentada)</option>
+            <option value="blend">BLEND (Blender)</option>
+          </select>
+        </label>
+        <button id="export" class="primary">Exportar</button>
+        <div id="toolmsg" class="hint"></div>
+        <div id="exports" class="exports"></div>
+        <div class="row end">
+          <button id="folder">Abrir pasta</button>
+          <button id="del" class="danger">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
