@@ -20,7 +20,7 @@ Aplicativo de PC (Windows) que cria modelos 3D com inteligência artificial **ro
 ## Arquitetura
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Janela["Janela do app (pywebview + WebView2)"]
         UI["Interface HTML/JS<br/>model-viewer"]
     end
