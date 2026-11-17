@@ -151,6 +151,10 @@ Os caminhos estão fixos em `D:\Miau3DStudio`. Para instalar em outro lugar, aju
 | Gerações seguintes (modelos já na memória) | ~1,5 min |
 | Projeção das fotos originais | ~10 s dentro da geração |
 
+## Licença
+
+O código do Miau 3D Studio é MIT (© 2026 Julia Nazka); veja o [LICENSE](LICENSE). Os modelos e programas de terceiros seguem as licenças deles, listadas abaixo.
+
 ## Licenças de terceiros
 
 - **Hunyuan3D-2 / HunyuanDiT** (Tencent): Tencent Hunyuan Community License. O código e os pesos **não** fazem parte deste repositório; são baixados por quem instala. A licença **não vale na União Europeia, no Reino Unido e na Coreia do Sul** e exige licença comercial própria acima de 1 milhão de usuários ativos por mês.
